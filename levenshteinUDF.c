@@ -3,24 +3,23 @@
  *
  *
  * INSTALLATION
+ * yum install MariaDB-devel
+ * gcc -o levenshteinUDF.so -shared levenshteinUDF.c `mysql_config --cflags` -fPIC
  *
- * gcc -o levenshtein-udf.so -shared levenshtein-udf.c -I /usr/include/mysql/
- * (mac) gcc -bundle -o levenshtein.so levenshtein.c -I/usr/local/mysql/include
  *
  * Put the shared library as described in: http://dev.mysql.com/doc/refman/5.0/en/udf-compiling.html
  *
  * Afterwards in SQL:
  *
- * CREATE FUNCTION levenshtein-udf RETURNS INT SONAME 'levenshtein-udf.so';
- * CREATE FUNCTION levenshtein_k RETURNS INT SONAME 'levenshtein.so';
- * CREATE FUNCTION levenshtein_ratio RETURNS REAL SONAME 'levenshtein.so';
+ * CREATE FUNCTION levenshteinUDF RETURNS INT SONAME 'levenshteinUDF.so';
  *
  *
  * Some credit for simple levenshtein to: Joshua Drew, SpinWeb Net Designs
  *
  * Other contributors:
  * - popthestack
- *
+ * - sarbaudie
+ * - linuxjedi
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,7 +37,7 @@
 #include <string.h>
 typedef unsigned long long ulonglong;
 typedef long long longlong;
-#include </usr/local/mysql-5.6.11-linux-glibc2.5-x86_64/include/mysql.h>
+#include <mysql.h>
 #include <ctype.h>
 
 
@@ -59,9 +58,9 @@ typedef long long longlong;
  * @space O(nm)
  */
 
-my_bool                levenshtein-udf_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
-void                levenshtein-udf_deinit(UDF_INIT *initid);
-longlong         levenshtein-udf(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error);
+my_bool                levenshteinUDF_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+void                levenshteinUDF_deinit(UDF_INIT *initid);
+longlong         levenshteinUDF(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error);
 
 
 
@@ -107,7 +106,7 @@ double  levenshtein_ratio(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char 
 
 
 
-my_bool levenshtein-udf_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
+my_bool levenshteinUDF_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
   if ((args->arg_count != 2) ||
       (args->arg_type[0] != STRING_RESULT || args->arg_type[1] != STRING_RESULT)) {
     strcpy(message, "Function requires 2 arguments, (string, string)");
@@ -129,7 +128,7 @@ my_bool levenshtein-udf_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
 }
 
 
-void levenshtein-udf_deinit(UDF_INIT *initid) {
+void levenshteinUDF_deinit(UDF_INIT *initid) {
   if (initid->ptr != NULL) {
     free(initid->ptr);
   }
@@ -154,7 +153,7 @@ inline int maximum(int a, int b) {
 }
 
 
-longlong levenshtein-udf(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error) {
+longlong levenshteinUDF(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error) {
   const char *s = args->args[0];
   const char *t = args->args[1];
 
