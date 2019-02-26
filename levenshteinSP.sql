@@ -41,9 +41,8 @@ BEGIN
             cv0 = CHAR(i),
             j = 1;
         
-        WHILE (j <= c_temp) THEN
+        WHILE (j <= c_temp) DO
                 SET c = c_temp;
-            END IF;
             
             SET c_temp = ORD(SUBSTRING(cv1, j+1, 1)) + 1;
             IF (c > c_temp) THEN
