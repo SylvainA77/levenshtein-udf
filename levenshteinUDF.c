@@ -93,9 +93,9 @@ longlong         levenshtein_k(UDF_INIT *initid, UDF_ARGS *args, char *is_null, 
  * @space O(nm)
  */
 
-my_bool   levenshtein_ratio_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
-void    levenshtein_ratio_deinit(UDF_INIT *initid);
-double  levenshtein_ratio(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error);
+my_bool   levenshteinratio_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+void    levenshteinratio_deinit(UDF_INIT *initid);
+double  levenshteinratio(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error);
 
 
 
@@ -214,7 +214,7 @@ longlong levenshteinUDF(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *e
 
 
 
-my_bool levenshtein_ratio_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
+my_bool levenshteinratio_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
   if ((args->arg_count != 2) ||
       (args->arg_type[0] != STRING_RESULT || args->arg_type[1] != STRING_RESULT)) {
     strcpy(message, "Function requires 2 arguments, (string, string)");
@@ -236,21 +236,21 @@ my_bool levenshtein_ratio_init(UDF_INIT *initid, UDF_ARGS *args, char *message) 
 }
 
 
-void levenshtein_ratio_deinit(UDF_INIT *initid) {
+void levenshteinratio_deinit(UDF_INIT *initid) {
   if (initid->ptr != NULL) {
     free(initid->ptr);
   }
 }
 
 
-double levenshtein_ratio(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error) {
+double levenshteinratio(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error) {
   const char *s = args->args[0];
   const char *t = args->args[1];
 
   int n = (s == NULL) ? 0 : args->lengths[0];
   int m = (t == NULL) ? 0 : args->lengths[1];
 
-  double dist = (double) levenshtein(initid, args, is_null, error);
+  double dist = (double) levenshteinUDF(initid, args, is_null, error);
   double maxlen  = maximum(n, m);
 
   if (maxlen == 0) return 0.0;
