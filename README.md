@@ -1,20 +1,17 @@
 # levenshtein-udf
 How to make levenshtein function a UDF
 
-1. les sources
-Elles se trouvent actuellement dans le reporteoie racine sur la machine : double_metaphone.c et levenshtein.c . Il s'agit de fonctions de calcul téléchargées puis transformées en librairies compatibles MySQL par mes soins. Les specs de la surcouche se trouvent ici :  https://dev.mysql.com/doc/refman/5.6/en/adding-udf.html 
+1. Sources  
+The sources are currently located in the root directory on the machine: double_metaphone.c and levenshtein.c. These are calculation functions that I downloaded and converted into MySQL-compatible libraries. The specs for the overlay can be found here: https://dev.mysql.com/doc/refman/5.6/en/adding-udf.html
+Recommendation: Save the sources in an SVN repository, ideally in the one used by the Virage project that utilizes them.
 
-Préconisation : sauvegarder les sources dans un svn, idéalement dans celui du projet virage qui les utilise.
+2.  Libraries  
+The aforementioned sources are compiled into libraries using gcc. It is crucial not to forget the -shared flag during compilation; otherwise, creating the function in MySQL will not go smoothly.
+Recommendation: Place the libraries (the double_metaphone.so and levenshtein.so files in our case) in the /lib directory of the machine and then create a symbolic link of the same name from _/usr/local/mysql/lib/plugin_. This way, a program that needs to call these functions won't have to go through the database.
 
-2. les librairies
-Les sources précédentes se compilent en librairies à l'aide de gcc. Il est très important de ne pas oublier le flag -shared lors de la compilation, sinon lors de la création de la fonction dans MySQL cela ne se passera pas très bien.
+3.  Functions  
+Finally, you need to create the functions in MySQL to use them in queries. Use the following command: _CREATE FUNCTION <function_name_in_library> RETURNS <expected_return_variable_type> SONAME '<library_name_with_extension_but_without_path>';_
+Example: In the levenshtein.so library, we have three functions: levenshtein, levenshtein_k, and levenshtein_ratio. The first two return an integer, while the last one, which we are interested in, returns a real number. To create the function in MySQL, use the following command: **CREATE FUNCTION levenshtein_ratio RETURNS REAL SONAME 'levenshtein.so';**
+We can now use it like any other function in a query.
 
-Préconisation : déposer les librairies (les fichiers double_metaphone.so et levenshtein.so dans notre cas) dans le répertoire /lib de la machine puis créer un lien symbolique du même nom depuis /usr/local/mysql/lib/plugin . Ainsi un programme qui aurait besoin de faire appel à ces mêmes fonctions n'aura pas besoin de passer par la base de données.
-
-3. les fonctions
-Pour finir il faut créer les fonctions dans MySQL afin de pouvoir les utiliser lors de requêtes. Il faut alors passer l'ordre suivant : CREATE FUNCTION <nom_de_la_fonction_dans_la_librairie> RETURNS <type_de_la_variable_de_retour_attendue> SONAME '<nom_de_la_librairie_avec_son_extension_mais_sans_le_path>'; 
-
-Exemple : dans la librairire levenshtein.so, nous disposons de trois fonctions : levenshtein, levenshtein_k et levenshtein_ratio. Les deux premières retournent un entier, la dernière, qui nous intéresse un réel. Pour créer la fonction dans MySQL il faudra donc passer la commande suivante :  CREATE FUNCTION levenshtein_ratio RETURNS REAL SONAME 'levenshtein.so';
-Nous pouvons désormais l'utiliser comme n'importe quelle autre fonction dans une requête.
-
-Astuce :  La liste des UDF est trouvable grace a cette requête : select * from mysql.func . 
+Tip: The list of UDFs can be found using this query: _SELECT * FROM mysql.func_.
