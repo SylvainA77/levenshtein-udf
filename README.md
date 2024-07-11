@@ -15,3 +15,5 @@ Example: In the levenshtein.so library, we have three functions: levenshtein, le
 We can now use it like any other function in a query.
 
 Tip: The list of UDFs can be found using this query: _SELECT * FROM mysql.func_.
+
+Mentioned in [![Mentioned in Awesome MariaDB](https://awesome.re/mentioned-badge.svg)](https://github.com/Vettabase/awesome-mariadb)
